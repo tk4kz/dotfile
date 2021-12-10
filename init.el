@@ -13,19 +13,12 @@
 (require 'package)
 ;; MELPA
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-;; MELPA-stable
-;;(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
-;; Marmalade
-;;(add-to-list 'package-archives  '("marmalade" . "http://marmalade-repo.org/packages/") t)
-;; Org
-;;(add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t)
 (package-initialize)
 
 ;; Solarized theme
 (add-to-list 'custom-theme-load-path "~/.emacs.d/lisp/emacs-color-theme-solarized")
 
 ;;; Window の設定
-;;(when (equal window-system 'x)
 (when window-system
   ;; mozc
   (require 'mozc-im)
@@ -40,12 +33,11 @@
 		    (inactivate-input-method)))
   ;; 全角半角キーと無変換キーのキーイベントを横取りする
   (defadvice mozc-handle-event (around intercept-keys (event))
-    "Intercept keys muhenkan and zenkaku-hankaku, before passing keys to mozc-server (which the function mozc-handle-event does), to properly disable mozc-mode."
     (if (member event (list 'zenkaku-hankaku 'muhenkan))
 	(progn
 	  (mozc-clean-up-session)
 	  (toggle-input-method))
-      (progn ;(message "%s" event) ;debug
+      (progn
 	ad-do-it)))
   (ad-activate 'mozc-handle-event)
   ;; 変換候補をミニバッファに表示
@@ -58,13 +50,6 @@
   ;; あいうえお
   ;; 
   (add-to-list 'default-frame-alist '(font . "Cica-14"))
-;;  (set-face-attribute 'default nil
-;;		      :family "DejaVu Sans Mono"
-;;		      :height 120) ;; 12pt
-;;  (set-fontset-font nil 'japanese-jisx0208
-;;		    (font-spec :family "IPAGothic" ))
-;;  ;; フォントの横幅を調整
-;;  (add-to-list 'face-font-rescale-alist '(".*IPA.*" . 1.20))
 
   ;; Server 設定
   (require 'server)
@@ -150,12 +135,6 @@
 
 ;; The local variables list in .emacs と言われるのを抑止
 (add-to-list 'ignored-local-variables 'syntax) 
-;
-; カーソル位置へのペースト
-;(setq mouse-yank-at-point t)
-
-;; I never use C-x C-c
-;;(defalias 'exit 'save-buffers-kill-emacs)
 
 ;;; cperl-mode
 (defalias 'perl-mode 'cperl-mode)
@@ -178,9 +157,6 @@
   :mode ("\\.md\\'" . markdown-mode)
   :config
   (setq
-   ;;markdown-command "github-markup"
-   ;;markdown-command-needs-filename t
-   ;;markdown-content-type "application/xhtml+xml"
    markdown-css-paths '("https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.min.css")
    markdown-command "pandoc -t html5")
 
@@ -249,6 +225,7 @@ Preview           C-c C-c p  _v_: Preview
 ;;; magit
 (global-set-key (kbd "C-x g") 'magit-status)
 
+;;; company
 (require 'company)
 (global-company-mode) ; 全バッファで有効にする
 (global-set-key (kbd "TAB") 'company-indent-or-complete-common)
@@ -266,7 +243,7 @@ Preview           C-c C-c p  _v_: Preview
 (define-key company-active-map (kbd "C-s") 'company-filter-candidates) ;; C-s で絞り込む
 (define-key company-active-map [tab] 'company-complete-selection) ;; TAB で候補を設定
 (define-key emacs-lisp-mode-map (kbd "C-M-i") 'company-complete) ;; 各種メジャーモードでも C-M-i で company-mode の補完を使う
-;; color
+;; companyで使うcolor
 (set-face-attribute 'company-tooltip nil
 		    :foreground "black" :background "lightgrey")
 (set-face-attribute 'company-tooltip-common nil
@@ -314,22 +291,15 @@ Preview           C-c C-c p  _v_: Preview
   ;; Insert text to temp-buffer, and "send" content to xsel stdin
   (with-temp-buffer
     (insert text)
-    ;; I prefer using the "clipboard" selection (the one the
-    ;; typically is used by c-c/c-v) before the primary selection
-    ;; (that uses mouse-select/middle-button-click)
     (call-process-region (point-min) (point-max)
 			 "xsel" nil 0 nil "--clipboard" "--input")))
 (defun xsel-paste-function()
-  ;; Find out what is current selection by xsel. If it is different
-  ;; from the top of the kill-ring (car kill-ring), then return
-  ;; it. Else, nil is returned, so whatever is in the top of the
-  ;; kill-ring will be used.
   (let ((xsel-output (shell-command-to-string "xsel --clipboard --output")))
     (unless (string= (car kill-ring) xsel-output)
       xsel-output )))
 (setq interprogram-cut-function 'xsel-cut-function)
 (setq interprogram-paste-function 'xsel-paste-function)
-;; end of X clipboard integration 
+;;; end of X clipboard integration 
 
 ;;; ruby-block
 (require 'ruby-block)
@@ -369,8 +339,8 @@ Preview           C-c C-c p  _v_: Preview
 ;;; espy
 (setq espy-password-file "~/.etc/passwd/passwd.org.gpg")
 
-;; Bridge projectile and project together so packages that depend on project
-;; like eglot work
+;;; Bridge projectile and project together so packages that depend on project
+;;; like eglot work
 (use-package projectile
   :ensure t)
 (require 'projectile)
@@ -404,14 +374,14 @@ Preview           C-c C-c p  _v_: Preview
   (exec-path-from-shell-initialize)
   (setq exec-path-from-shell-check-startup-files nil))
 
-;; dumb-jump
+;;; dumb-jump
 (dumb-jump-mode)
 (setq dumb-jump-selector 'ivy)
 
-;; smart-jump
+;;; smart-jump
 (smart-jump-setup-default-registers)
 
-;; ivy
+;;; ivy
 (when (require 'ivy nil t)
   ;; M-o を ivy-hydra-read-action に割り当てる．
   (when (require 'ivy-hydra nil t)
@@ -434,7 +404,7 @@ Preview           C-c C-c p  _v_: Preview
   ;; アクティベート
   (ivy-mode 1))
 
-;; counsel
+;;; counsel
 (when (require 'counsel nil t)
   ;; key bind
   (global-set-key (kbd "M-x") 'counsel-M-x)
@@ -449,7 +419,7 @@ Preview           C-c C-c p  _v_: Preview
   ;; アクティベート
   (counsel-mode 1))
 
-;; swiper
+;;; swiper
 (when (require 'swiper nil t)
   ;;(global-set-key (kbd "M-s M-s") 'swiper-thing-at-point))
   (global-set-key (kbd "C-s") 'swiper-thing-at-point))
@@ -492,7 +462,6 @@ Preview           C-c C-c p  _v_: Preview
 ;;(defun modeline-scale ()
 ;;    (interactive)
 ;;    (custom-set-faces '(mode-line ((t (:height 0.5))))))
-
 
 ;;;;; end of init.el
 
