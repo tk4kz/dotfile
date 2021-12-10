@@ -1,5 +1,8 @@
 ;;;;; init.el
 
+;; debug
+(setq debug-on-error t)
+
 ;; load path
 (add-to-list 'load-path "~/.emacs.d/lisp")
 
@@ -21,17 +24,14 @@
 ;; Solarized theme
 (add-to-list 'custom-theme-load-path "~/.emacs.d/lisp/emacs-color-theme-solarized")
 
-;; Window(非ターミナル)の設定
+;;; Window の設定
 ;;(when (equal window-system 'x)
 (when window-system
-  ;; GUI の設定
   ;; mozc
-  ;;(require 'mozc)                                 ; mozc の読み込み
   (require 'mozc-im)
-  (set-language-environment "Japanese")           ; 言語環境を"japanese"に
-  ;;(setq default-input-method "japanese-mozc")     ; IME を japanes-mozc に
+  (set-language-environment "Japanese")
   (setq default-input-method "japanese-mozc-im")
-  (prefer-coding-system 'utf-8)                   ; デフォルトの文字コードを UTF-8 に
+  (prefer-coding-system 'utf-8)
   (global-set-key [henkan]
 		  (lambda () (interactive)
 		    (when (null current-input-method) (toggle-input-method))))
@@ -49,17 +49,22 @@
 	ad-do-it)))
   (ad-activate 'mozc-handle-event)
   ;; 変換候補をミニバッファに表示
-  (setq mozc-candidate-style 'echo-area)
-
+  ;;(setq mozc-candidate-style 'echo-area)
   
   ;; font
-  (set-face-attribute 'default nil
-		      :family "DejaVu Sans Mono"
-		      :height 120) ;; 12pt
-  (set-fontset-font nil 'japanese-jisx0208
-		    (font-spec :family "IPAGothic" ))
-  ;; フォントの横幅を調整
-  (add-to-list 'face-font-rescale-alist '(".*IPA.*" . 1.25))
+  ;;
+  ;; 1234567890
+  ;; abcdefghij
+  ;; あいうえお
+  ;; 
+  (add-to-list 'default-frame-alist '(font . "Cica-14"))
+;;  (set-face-attribute 'default nil
+;;		      :family "DejaVu Sans Mono"
+;;		      :height 120) ;; 12pt
+;;  (set-fontset-font nil 'japanese-jisx0208
+;;		    (font-spec :family "IPAGothic" ))
+;;  ;; フォントの横幅を調整
+;;  (add-to-list 'face-font-rescale-alist '(".*IPA.*" . 1.20))
 
   ;; Server 設定
   (require 'server)
@@ -78,10 +83,10 @@
 
     ;; 終了時に yes/no の問い合わせ
     (setq confirm-kill-emacs 'yes-or-no-p)
+
+    ;; Solarized theme適用
+    (load-theme 'solarized-dark t)
     )
-  
-  ;; Solarized theme
-  ;;(load-theme 'solarized t)
 )
 
 ;; Solarized theme
@@ -128,17 +133,14 @@
 ;; C-x l で goto-line を実行
 ;;(define-key ctl-x-map "l" 'goto-line) 
 
-;; 時間を表示
-;;(display-time) 
-
-;; 列数表示
-;;(column-number-mode 1) 
-
 ;; メニューバーを消す
 (menu-bar-mode -1)
 
 ;; ツールバー非表示
 (tool-bar-mode 0)
+
+;; scroll bar 非表示
+(scroll-bar-mode -1)
 
 ;; C-h でカーソルの左にある文字を消す
 (define-key global-map "\C-h" 'delete-backward-char)
@@ -146,17 +148,10 @@
 ;; C-h に割り当てられている関数 help-command を C-x C-h に割り当てる
 (define-key global-map "\C-x\C-h" 'help-command)
 
-;; C-o に動的略語展開機能を割り当てる
-;;(define-key global-map "\C-o" 'dabbrev-expand)
-;;(setq dabbrev-case-fold-search nil) ; 大文字小文字を区別
-
-;; BS で選択範囲を消す
-;;(delete-selection-mode 1)
-
 ;; The local variables list in .emacs と言われるのを抑止
 (add-to-list 'ignored-local-variables 'syntax) 
-
-;; カーソル位置へのペースト
+;
+; カーソル位置へのペースト
 ;(setq mouse-yank-at-point t)
 
 ;; I never use C-x C-c
@@ -174,76 +169,6 @@
 	     (define-key cperl-mode-map "\C-cc" 'cperl-check-syntax)
 	     (setq indent-tabs-mode nil)))
 
-;;; view-mode
-;;(require 'viewer)
-;;(viewer-stay-in-setup)
-;; 色の指定
-;;(setq viewer-modeline-color-unwritable "tomato")
-;;(setq viewer-modeline-color-view "orange")
-;;(viewer-change-modeline-color-setup)
-;;(viewer-aggressive-setup 'force)
-
-;; migemo
-;;(require 'migemo)
-;;(setq migemo-command "/usr/local/bin/cmigemo")
-;;(setq migemo-options '("-q" "--emacs"))
-;;(setq migemo-dictionary "/usr/local/share/migemo/utf-8/migemo-dict")
-;;(setq migemo-user-dictionary nil)
-;;(setq migemo-regex-dictionary nil)
-;;(setq migemo-coding-system 'utf-8-unix)
-;;(load-library "migemo")
-;;(migemo-init)
-
-;;; helm
-;;(require 'helm-config)
-;;(helm-mode 1)
-;;
-;;(define-key global-map (kbd "M-x")     'helm-M-x)
-;;(define-key global-map (kbd "C-x C-f") 'helm-find-files)
-;;(define-key global-map (kbd "C-x C-r") 'helm-recentf)
-;;(define-key global-map (kbd "M-y")     'helm-show-kill-ring)
-;;(define-key global-map (kbd "C-c i")   'helm-imenu)
-;;(define-key global-map (kbd "C-x b")   'helm-buffers-list)
-;;
-;;(define-key helm-map (kbd "C-h") 'delete-backward-char)
-;;(define-key helm-find-files-map (kbd "C-h") 'delete-backward-char)
-;;;;(define-key helm-find-files-map (kbd "TAB") 'helm-execute-persistent-actio)
-;;;;(define-key helm-read-file-map (kbd "TAB") 'helm-execute-persistent-action)
-;;
-;;;;; Disable helm in some functions
-;;(add-to-list 'helm-completing-read-handlers-alist '(find-alternate-file . nil))
-;;
-;;;;; Emulate `kill-line' in helm minibuffer
-;;(setq helm-delete-minibuffer-contents-from-point t)
-;;(defadvice helm-delete-minibuffer-contents (before helm-emulate-kill-line activate)
-;;  "Emulate `kill-line' in helm minibuffer"
-;;  (kill-new (buffer-substring (point) (field-end))))
-;;
-;;(defadvice helm-ff-kill-or-find-buffer-fname (around execute-only-if-exist activate)
-;;  "Execute command only if CANDIDATE exists"
-;;  (when (file-exists-p candidate)
-;;    ad-do-it))
-;;
-;;(defadvice helm-ff-transform-fname-for-completion (around my-transform activate)
-;;  "Transform the pattern to reflect my intention"
-;;  (let* ((pattern (ad-get-arg 0))
-;;         (input-pattern (file-name-nondirectory pattern))
-;;         (dirname (file-name-directory pattern)))
-;;    (setq input-pattern (replace-regexp-in-string "\\." "\\\\." input-pattern))
-;;    (setq ad-return-value
-;;          (concat dirname
-;;                  (if (string-match "^\\^" input-pattern)
-;;                      ;; '^' is a pattern for basename
-;;                      ;; and not required because the directory name is prepended
-;;                      (substring input-pattern 1)
-;;                    (concat ".*" input-pattern))))))
-;;
-;;;;; helm-ag
-;;(require 'helm-ag)
-;;(setq helm-ag-base-command "rg -S --vimgrep --no-heading")
-;;(global-set-key (kbd "C-c s") 'helm-ag)
-;;
-
 ;;; markdown
 (use-package markdown-mode
   :bind
@@ -259,6 +184,12 @@
    markdown-css-paths '("https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.min.css")
    markdown-command "pandoc -t html5")
 
+  (set-face-attribute 'markdown-code-face nil
+                      :inherit 'default)
+  (set-face-attribute 'markdown-inline-code-face nil
+                      :inherit 'default
+                      :foreground (face-attribute font-lock-type-face :foreground))
+  
 ;;; hydra-markdown
 (defhydra hydra-markdown (:hint nil :exit t)
   "
@@ -298,9 +229,10 @@ Preview           C-c C-c p  _v_: Preview
   ("v" markdown-preview :exit t)))
 
 ;;; smart mode line
-(defvar sml/no-confirm-load-theme t)
-(defvar sml/shorten-directory -1)
-(setq sml/hidden-modes '(" Helm" " AC" " ElDoc" " company" " RBlock" " yas" " counsel" " ivy" " Projectile" " P"))
+(setq sml/theme 'respectful)
+(setq sml/no-confirm-load-theme t)
+(setq sml/shorten-directory -1)
+(setq sml/hidden-modes '(" Helm" " AC" " ElDoc" " company" " RBlock" " yas" " counsel" " ivy" " Projectile" " WK" " Ρ"))
 (sml/setup)
 (column-number-mode t)
 (line-number-mode t)
@@ -317,11 +249,9 @@ Preview           C-c C-c p  _v_: Preview
 ;;; magit
 (global-set-key (kbd "C-x g") 'magit-status)
 
-;;; company
 (require 'company)
 (global-company-mode) ; 全バッファで有効にする
 (global-set-key (kbd "TAB") 'company-indent-or-complete-common)
-
 (setq company-auto-expand t)
 (setq company-transformers '(company-sort-by-backend-importance)) ;; ソート順
 (setq company-idle-delay 0) ; 遅延なしにすぐ表示
@@ -351,7 +281,14 @@ Preview           C-c C-c p  _v_: Preview
 		    :background "orange")
 (set-face-attribute 'company-scrollbar-bg nil
 		    :background "gray40")
+;; company-quickhelp
+(setq company-quickhelp-color-foreground "white")
+(setq company-quickhelp-color-background "dark slate gray")
+(setq company-quickhelp-max-lines 5)
+(company-quickhelp-mode)
+
 ;;; company end ;;;
+
 
 ;;; recentf.el
 (defmacro with-suppressed-message (&rest body)
@@ -398,40 +335,6 @@ Preview           C-c C-c p  _v_: Preview
 (require 'ruby-block)
 (ruby-block-mode t)
 
-;;; flycheck
-(require 'flycheck)
-;;(setq flycheck-check-syntax-automatically '(mode-enabled save))
-(add-hook 'ruby-mode-hook 'flycheck-mode)
-(add-hook 'python-mode-hook 'flycheck-mode)
-;;(dolist (hook (list
-;;               'ruby-mode-hook
-;;               'python-mode-hook
-;;               ))
-;;  (add-hook hook '(lambda () (flycheck-mode 1))))
-;;
-;; Use posframe as flycheck UI.
-;;(with-eval-after-load 'flycheck
-;;  (require 'flycheck-posframe)
-;;  (add-hook 'flycheck-mode-hook 'flycheck-posframe-mode)
-;;  (setq flycheck-posframe-position 'window-bottom-left-corner)
-;;  (set-face-attribute 'flycheck-posframe-error-face
-;;                    nil
-;;                    :inherit nil
-;;                    :foreground "red")
-;;
-;;  (set-face-attribute 'flycheck-posframe-warning-face
-;;                    nil
-;;                    :foreground "orange")
-;;
-;;  (set-face-attribute 'flycheck-posframe-info-face
-;;                    nil
-;;                    :foreground "cyan")
-;;
-;;  (set-face-attribute 'flycheck-posframe-border-face
-;;                    nil
-;;                    :foreground "#dc752f")
-;;)
-
 ;;; yasnippet
 (with-eval-after-load 'yasnippet
   (setq yas-snippet-dirs
@@ -447,35 +350,9 @@ Preview           C-c C-c p  _v_: Preview
 ;; 有効にするモード
   (add-hook 'ruby-mode-hook 'yas-minor-mode))
 
-;;; helm-c-yasnippet
-;;(require 'helm-c-yasnippet)
-;;(setq helm-yas-space-match-any-greedy t)
-;;(global-set-key (kbd "C-c y") 'helm-yas-complete)
-;;(push '("emacs.+/snippets/" . snippet-mode) auto-mode-alist)
-
 ;;; east-asian-ambiguous
 (require 'eaw)
 (eaw-fullwidth)
-
-;;; w3m
-;;(require 'w3m)
-;;(defun w3m-browse-url-other-window (url &optional newwin)
-;;  (let ((w3m-pop-up-windows t))
-;;    (if (one-window-p) (split-window))
-;;    (other-window 1)
-;;    (w3m-browse-url url newwin)))
-
-;;; inf-ruby
-;;(define-key inf-ruby-minor-mode-map (kbd "C-c C-s") nil)
-;;(define-key global-map (kbd "C-c C-i") 'inf-ruby)
-;;(with-eval-after-load 'inf-ruby
-;; キーバインド
-;;  (bind-keys :map inf-ruby-minor-mode-map
-;;	     ("C-c C-s" . nil)
-;;	     ("C-c C-i" . inf-ruby)))
-
-;;; robe
-;;(add-hook 'ruby-mode-hook 'robe-mode)
 
 ;;; slime-indentation
 (slime-setup '(slime-fancy slime-indentation))
@@ -509,13 +386,11 @@ Preview           C-c C-c p  _v_: Preview
 (require 'eglot)
 ;; ruby-mode
 (add-hook 'ruby-mode-hook 'eglot-ensure)
-
 ;; python-mode
 (add-hook 'python-mode-hook 'eglot-ensure)
 (add-to-list 'eglot-server-programs '(python-mode . ("pyls")))
-
-;;(define-key eglot-mode-map (kbd "C-c e f") 'eglot-format)
-;;(define-key eglot-mode-map (kbd "C-c e n") 'eglot-rename)
+(define-key eglot-mode-map (kbd "C-c e f") 'eglot-format)
+(define-key eglot-mode-map (kbd "C-c e n") 'eglot-rename)
 
 (defun project-root (project)
   (car (project-roots project)))
@@ -551,7 +426,7 @@ Preview           C-c C-c p  _v_: Preview
   ;; プロンプトの表示が長い時に折り返す（選択候補も折り返される）
   (setq ivy-truncate-lines nil)
   ;; リスト先頭で `C-p' するとき，リストの最後に移動する
-  (setq ivy-wrap t)
+  ;;  (setq ivy-wrap t)
 
   (setq ivy-height 20)
   (setq ivy-extra-directories nil)
@@ -580,54 +455,10 @@ Preview           C-c C-c p  _v_: Preview
   (global-set-key (kbd "C-s") 'swiper-thing-at-point))
 
 ;;; flymake
-;;(require 'flymake-diagnostic-at-point)
+(require 'flymake-diagnostic-at-point)
 ;;(require 'package-lint)
-;;(with-eval-after-load 'flymake
-;;  (add-hook 'flymake-mode-hook 'flymake-diagnostic-at-point-mode)
-;;  (add-hook 'emacs-lisp-mode-hook 'package-lint-setup-flymake)
-;;  (set-face-attribute 'popup-tip-face nil
-;;		      :background "dark slate gray" :foreground "white" :underline nil))
-;;(remove-hook 'flymake-diagnostic-functions 'flymake-proc-legacy-flymake)
-
-;; flymake-posframe
-;;(defvar flymake-posframe-hide-posframe-hooks
-;;  '(pre-command-hook post-command-hook focus-out-hook)
-;;  "The hooks which should trigger automatic removal of the posframe.")
-;;
-;;(defun flymake-posframe-hide-posframe ()
-;;  "Hide messages currently being shown if any."
-;;  (posframe-hide " *flymake-posframe-buffer*")
-;;  (dolist (hook flymake-posframe-hide-posframe-hooks)
-;;    (remove-hook hook 'flymake-posframe-hide-posframe t)))
-;;
-;;(defun my/flymake-diagnostic-at-point-display-popup (text)
-;;  "Display the flymake diagnostic TEXT inside a posframe."
-;;  (posframe-show " *flymake-posframe-buffer*"
-;;		 :string (concat flymake-diagnostic-at-point-error-prefix
-;;				 (flymake--diag-text
-;;				  (get-char-property (point) 'flymake-diagnostic)))
-;;		 :position (point)
-;;		 :foreground-color "cyan"
-;;		 :internal-border-width 2
-;;		 :internal-border-color "red"
-;;		 :poshandler 'posframe-poshandler-window-bottom-left-corner)
-;; (dolist (hook flymake-posframe-hide-posframe-hooks)
-;;    (add-hook hook 'flymake-posframe-hide-posframe nil t)))
-;;(advice-add 'flymake-diagnostic-at-point-display-popup :override 'my/flymake-diagnostic-at-point-display-popup)
-;; https://www.ncaq.net/2019/02/08/19/36/52/
-;;(with-eval-after-load 'flymake
-;;  (custom-set-variables
-;;   '(flymake-error-bitmap nil)
-;;   '(flymake-note-bitmap nil)
-;;   '(flymake-warning-bitmap nil)
-;;   )
-;;  (set-face-underline 'flymake-error nil)
-;;  (set-face-underline 'flymake-note nil)
-;;  (set-face-underline 'flymake-warning nil)
-;;  )
-;
-;;(require 'flymake-ruby)
-;;(add-hook 'ruby-mode-hook 'flymake-ruby-load)
+(with-eval-after-load 'flymake
+  (add-hook 'flymake-mode-hook 'flymake-diagnostic-at-point-mode))
 
 ;;; js-mode
 (add-hook 'js-mode-hook
@@ -644,7 +475,23 @@ Preview           C-c C-c p  _v_: Preview
 ;; 特定のモードで使う
 ;;(add-hook 'text-mode-hook 'pangu-spacing-mode)
 ;; すべてのメジャーモードで使う
-(global-pangu-spacing-mode 1)
+;;(global-pangu-spacing-mode 1)
+
+;;; which-key.el
+(require 'which-key)
+
+;;; Change mode-line color in view-mode
+(use-package viewer)
+(setq viewer-modeline-color-view "orange")
+(viewer-change-modeline-color-setup)
+
+;;; modeline font scaling
+;;;   拡大・縮小と2パターン欲しい
+;;;   画面の解像度を判別して拡大・縮小の動きを変える
+;;;   
+;;(defun modeline-scale ()
+;;    (interactive)
+;;    (custom-set-faces '(mode-line ((t (:height 0.5))))))
 
 
 ;;;;; end of init.el
@@ -655,18 +502,11 @@ Preview           C-c C-c p  _v_: Preview
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   (quote
-    ("d677ef584c6dfc0697901a44b885cc18e206f05114c8a3b7fde674fce6180879" "8db4b03b9ae654d4a57804286eb3e332725c84d7cdab38463cb6b97d5762ad26" "8aebf25556399b58091e533e455dd50a6a9cba958cc4ebb0aab175863c25b9a4" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" default)))
+   '("d677ef584c6dfc0697901a44b885cc18e206f05114c8a3b7fde674fce6180879" "8db4b03b9ae654d4a57804286eb3e332725c84d7cdab38463cb6b97d5762ad26" "8aebf25556399b58091e533e455dd50a6a9cba958cc4ebb0aab175863c25b9a4" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" default))
  '(flymake-error-bitmap nil)
  '(flymake-note-bitmap nil)
  '(flymake-warning-bitmap nil)
- '(frame-background-mode (quote dark))
+ '(frame-background-mode 'dark)
  '(package-selected-packages
-   (quote
-    (pangu-spacing mozc-im amx flycheck-pycheckers flymake-ruby flycheck-posframe package-lint-flymake package-lint flymake-diagnostic-at-point posframe counsel ivy company-quickhelp company-quickhelp-terminal exec-path-from-shell smart-jump python-mode projectile eglot espy mozc use-package markdown-mode bind-key hydra markdown-preview-mode slime helm-c-yasnippet robe w3m yasnippet flycheck ruby-block helm-ag recentf-ext company magit helm zenburn-theme total-lines solarized-theme smart-mode-line molokai-theme madhat2r-theme gruvbox-theme dakrone-theme calmer-forest-theme))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+   '(viewer python-mode hide-mode-line which-key deadgrep pangu-spacing mozc-im amx flycheck-pycheckers flymake-ruby flycheck-posframe package-lint-flymake package-lint flymake-diagnostic-at-point posframe counsel ivy company-quickhelp company-quickhelp-terminal exec-path-from-shell smart-jump projectile eglot espy mozc use-package markdown-mode bind-key hydra markdown-preview-mode slime helm-c-yasnippet robe w3m yasnippet flycheck ruby-block helm-ag recentf-ext company magit helm zenburn-theme total-lines solarized-theme smart-mode-line molokai-theme madhat2r-theme gruvbox-theme dakrone-theme calmer-forest-theme))
+ '(which-key-mode t))
