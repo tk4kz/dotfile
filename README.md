@@ -1,1 +1,4 @@
 # dotfile
+
+Emacsのinit.elをはじめとするdotfile集。
+
