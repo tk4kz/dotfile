@@ -161,21 +161,10 @@
    markdown-command "pandoc -t html5")
 
   (set-face-attribute 'markdown-code-face nil
-                      :inherit 'outline-1)
+                      :inherit 'outline-3)
   (set-face-attribute 'markdown-pre-face nil
-                      :inherit 'outline-1)
+                      :inherit 'outline-3)
 
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(markdown-code-face ((t (:inherit outline-1))))
- '(markdown-pre-face ((t (:inherit outline-1)))))
-
-
-
-  
 ;;; hydra-markdown
 (defhydra hydra-markdown (:hint nil :exit t)
   "
