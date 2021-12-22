@@ -156,10 +156,11 @@
   :commands (markdown-mode gfm-mode)
   :mode ("\\.md\\'" . markdown-mode)
   :config
-  (setq
-   markdown-css-paths '("https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.min.css")
-   markdown-command "pandoc -t html5")
+  (setq markdown-css-paths '("https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.min.css") markdown-command "pandoc -t html5")
 
+  ;; githib css
+  (setq markdown-preview-stylesheets (list "https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.min.css"))
+  
   (set-face-attribute 'markdown-code-face nil
                       :inherit 'outline-3)
   (set-face-attribute 'markdown-pre-face nil
@@ -243,21 +244,22 @@ Preview           C-c C-c p  _v_: Preview
 (define-key company-active-map [tab] 'company-complete-selection) ;; TAB で候補を設定
 (define-key emacs-lisp-mode-map (kbd "C-M-i") 'company-complete) ;; 各種メジャーモードでも C-M-i で company-mode の補完を使う
 ;; companyで使うcolor
-(set-face-attribute 'company-tooltip nil
-		    :foreground "black" :background "lightgrey")
-(set-face-attribute 'company-tooltip-common nil
-		    :foreground "black" :background "lightgrey")
-(set-face-attribute 'company-tooltip-common-selection nil
-		    :foreground "white" :background "steelblue")
-(set-face-attribute 'company-tooltip-selection nil
-		    :foreground "black" :background "steelblue")
-(set-face-attribute 'company-preview-common nil
-		    :background nil :foreground "lightgrey" :underline t)
-(set-face-attribute 'company-scrollbar-fg nil
-		    :background "orange")
-(set-face-attribute 'company-scrollbar-bg nil
-		    :background "gray40")
-;; company-quickhelp
+;;(set-face-attribute 'company-tooltip nil
+;;		    :foreground "black" :background "lightgrey")
+;;(set-face-attribute 'company-tooltip-common nil
+;;		    :foreground "black" :background "lightgrey")
+;;(set-face-attribute 'company-tooltip-common-selection nil
+;;		    :foreground "white" :background "steelblue")
+;;(set-face-attribute 'company-tooltip-selection nil
+;;		    :foreground "black" :background "steelblue")
+;;(set-face-attribute 'company-preview-common nil
+;;		    :background nil :foreground "lightgrey" :underline t)
+;;(set-face-attribute 'company-scrollbar-fg nil
+;;		    :background "orange")
+;;(set-face-attribute 'company-scrollbar-bg nil
+;;		    :background "gray40")
+
+;;; company-quickhelp
 (setq company-quickhelp-color-foreground "white")
 (setq company-quickhelp-color-background "dark slate gray")
 (setq company-quickhelp-max-lines 5)
