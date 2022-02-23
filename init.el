@@ -43,7 +43,7 @@
   ;; 変換候補をミニバッファに表示
   ;;(setq mozc-candidate-style 'echo-area)
   
-  ;; font
+  ;;; font
   ;;
   ;; 1234567890
   ;; abcdefghij
@@ -208,7 +208,7 @@ Preview           C-c C-c p  _v_: Preview
 (setq sml/theme 'respectful)
 (setq sml/no-confirm-load-theme t)
 (setq sml/shorten-directory -1)
-(setq sml/hidden-modes '(" Helm" " AC" " ElDoc" " company" " RBlock" " yas" " counsel" " ivy" " Projectile" " WK" " Ρ"))
+(setq sml/hidden-modes '(" AC" " ElDoc" " company" " RBlock" " yas" " counsel" " ivy" " WK" " Ρ" " super-save"))
 (sml/setup)
 (column-number-mode t)
 (line-number-mode t)
@@ -243,7 +243,7 @@ Preview           C-c C-c p  _v_: Preview
 (define-key company-active-map (kbd "C-s") 'company-filter-candidates) ;; C-s で絞り込む
 (define-key company-active-map [tab] 'company-complete-selection) ;; TAB で候補を設定
 (define-key emacs-lisp-mode-map (kbd "C-M-i") 'company-complete) ;; 各種メジャーモードでも C-M-i で company-mode の補完を使う
-;; companyで使うcolor
+;; color
 ;;(set-face-attribute 'company-tooltip nil
 ;;		    :foreground "black" :background "lightgrey")
 ;;(set-face-attribute 'company-tooltip-common nil
@@ -307,19 +307,19 @@ Preview           C-c C-c p  _v_: Preview
 (ruby-block-mode t)
 
 ;;; yasnippet
-(with-eval-after-load 'yasnippet
-  (setq yas-snippet-dirs
-	'("~/.emacs.d/snippets"))
-;; キーバインド
-  (bind-keys :map yas-minor-mode-map	
-	     ("C-<tab>" . yas-expand)
-	     ("C-c C-s" . yas-insert-snippet)
-	     ("<tab>" . nil) ; 他プラグイン(入力補完など)との競合回避
-	     )
-;; スニペット読込
-  (yas-reload-all)
-;; 有効にするモード
-  (add-hook 'ruby-mode-hook 'yas-minor-mode))
+(use-package yasnippet
+  :ensure t
+  :diminish yas-minor-mode
+  :bind (:map yas-minor-mode-map
+              ("C-x i i" . yas-insert-snippet)
+              ("C-x i n" . yas-new-snippet)
+              ("C-x i v" . yas-visit-snippet-file)
+              ("C-x i l" . yas-describe-tables)
+              ("C-x i g" . yas-reload-all))              
+  :config
+  (yas-global-mode 1)
+  (setq yas-prompt-functions '(yas-ido-prompt))
+  )
 
 ;;; east-asian-ambiguous
 (require 'eaw)
@@ -343,15 +343,20 @@ Preview           C-c C-c p  _v_: Preview
 ;;; Bridge projectile and project together so packages that depend on project
 ;;; like eglot work
 (use-package projectile
+  :diminish
   :ensure t)
-(require 'projectile)
-(defun my-projectile-project-find-function (dir)
-  (let ((root (projectile-project-root dir)))
-    (and root (cons 'transient root))))
-(projectile-mode t)
-(with-eval-after-load 'project
-  (add-to-list 'projectile-project-root-files ".projectroot")
-  (add-to-list 'project-find-functions 'my-projectile-project-find-function))
+;;  :custom
+;;  (projectile-switch-project-action 'projectile-dired)
+;;  :config
+;;  (projectile-mode +1)
+;;  (when (executable-find "ghq")
+;;    (setq projectile-known-projects
+;;          (mapcar
+;;           (lambda (x) (abbreviate-file-name x))
+;;           (split-string (shell-command-to-string "ghq list --full-path")))))
+;;  :bind-keymap
+;;  ("C-c p" . projectile-command-map))
+
 
 ;;; eglot
 (require 'eglot)
@@ -416,8 +421,6 @@ Preview           C-c C-c p  _v_: Preview
   (global-set-key (kbd "C-M-f") 'counsel-ag)
   ;;(global-set-key (kbd "C-x C-f") 'counsel-find-file)
   ;;(setq counsel-find-file-ignore-regexp (regexp-opt '("./" "../")))
-
-  ;; アクティベート
   (counsel-mode 1))
 
 ;;; swiper
@@ -456,15 +459,27 @@ Preview           C-c C-c p  _v_: Preview
 (setq viewer-modeline-color-view "orange")
 (viewer-change-modeline-color-setup)
 
-;;; modeline font scaling
-;;;   拡大・縮小と2パターン欲しい
-;;;   画面の解像度を判別して拡大・縮小の動きを変える
-;;;   
-;;(defun modeline-scale ()
-;;    (interactive)
-;;    (custom-set-faces '(mode-line ((t (:height 0.5))))))
+;;; Tree-sitter
+(require 'tree-sitter)
+(require 'tree-sitter-langs)
+(global-tree-sitter-mode)
+(add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
+
+;;; super-save
+(use-package super-save
+  :defer 1
+  :diminish
+  :config
+  (setq super-save-auto-save-when-idle t
+        super-save-idle-duration 10)
+  (super-save-mode +1))
+
+;;; default-text-scale : Easily adjust the font size
+(default-text-scale-mode 1)
+
 
 ;;;;; end of init.el
+
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -478,5 +493,11 @@ Preview           C-c C-c p  _v_: Preview
  '(flymake-warning-bitmap nil)
  '(frame-background-mode 'dark)
  '(package-selected-packages
-   '(viewer python-mode hide-mode-line which-key deadgrep pangu-spacing mozc-im amx flycheck-pycheckers flymake-ruby flycheck-posframe package-lint-flymake package-lint flymake-diagnostic-at-point posframe counsel ivy company-quickhelp company-quickhelp-terminal exec-path-from-shell smart-jump projectile eglot espy mozc use-package markdown-mode bind-key hydra markdown-preview-mode slime helm-c-yasnippet robe w3m yasnippet flycheck ruby-block helm-ag recentf-ext company magit helm zenburn-theme total-lines solarized-theme smart-mode-line molokai-theme madhat2r-theme gruvbox-theme dakrone-theme calmer-forest-theme))
+   '(default-text-scale super-save tree-sitter tree-sitter-langs viewer python-mode hide-mode-line which-key deadgrep pangu-spacing mozc-im amx flycheck-pycheckers flymake-ruby flycheck-posframe package-lint-flymake package-lint flymake-diagnostic-at-point posframe counsel ivy company-quickhelp company-quickhelp-terminal exec-path-from-shell smart-jump projectile eglot espy mozc use-package markdown-mode bind-key hydra markdown-preview-mode slime helm-c-yasnippet robe w3m yasnippet flycheck ruby-block helm-ag recentf-ext company magit helm zenburn-theme total-lines solarized-theme smart-mode-line molokai-theme madhat2r-theme gruvbox-theme dakrone-theme calmer-forest-theme))
  '(which-key-mode t))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
