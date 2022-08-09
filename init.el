@@ -152,7 +152,7 @@
 (use-package markdown-mode
   :bind
   (:map markdown-mode-map
-	("C-c m" . hydra-markdown/body))
+	("C-x m" . hydra-markdown/body))
   :commands (markdown-mode gfm-mode)
   :mode ("\\.md\\'" . markdown-mode)
   :config
@@ -208,7 +208,7 @@ Preview           C-c C-c p  _v_: Preview
 (setq sml/theme 'respectful)
 (setq sml/no-confirm-load-theme t)
 (setq sml/shorten-directory -1)
-(setq sml/hidden-modes '(" AC" " ElDoc" " company" " RBlock" " yas" " counsel" " ivy" " WK" " Ρ" " super-save"))
+(setq sml/hidden-modes '(" AC" " ElDoc" " company" " RBlock" " yas" " counsel" " ivy" " WK" " Ρ" " super-save" " tree-sitter"))
 (sml/setup)
 (column-number-mode t)
 (line-number-mode t)
@@ -456,7 +456,7 @@ Preview           C-c C-c p  _v_: Preview
 
 ;;; Change mode-line color in view-mode
 (use-package viewer)
-(setq viewer-modeline-color-view "orange")
+(setq viewer-modeline-color-view "dark red")
 (viewer-change-modeline-color-setup)
 
 ;;; Tree-sitter
@@ -471,8 +471,12 @@ Preview           C-c C-c p  _v_: Preview
   :diminish
   :config
   (setq super-save-auto-save-when-idle t
-        super-save-idle-duration 10)
+        super-save-idle-duration 5)
   (super-save-mode +1))
+
+;;; backup file
+(setq make-backup-files nil)
+
 
 ;;; default-text-scale : Easily adjust the font size
 (default-text-scale-mode 1)
