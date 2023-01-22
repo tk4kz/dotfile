@@ -15,10 +15,7 @@
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 (package-initialize)
 
-;; Solarized theme
-(add-to-list 'custom-theme-load-path "~/.emacs.d/lisp/emacs-color-theme-solarized")
-
-;;; Window の設定
+;;; GUI config
 (when window-system
   ;; mozc
   (require 'mozc-im)
@@ -40,41 +37,23 @@
       (progn
 	ad-do-it)))
   (ad-activate 'mozc-handle-event)
-  ;; 変換候補をミニバッファに表示
-  ;;(setq mozc-candidate-style 'echo-area)
   
-  ;;; font
-  ;;
-  ;; 1234567890
-  ;; abcdefghij
-  ;; あいうえお
-  ;; 
+  ;; font
   (add-to-list 'default-frame-alist '(font . "Cica-14"))
 
-  ;; Server 設定
-  (require 'server)
-  (unless (eq (server-running-p) 't)
-    (server-start)
-
-    (defun iconify-emacs-when-server-is-done ()
-      (unless server-clients (iconify-frame)))
-
-    ;; C-x C-c に割り当てる(好みに応じて)
-    (global-set-key (kbd "C-x C-c") 'server-edit)
-    ;; M-x exit で Emacs を終了できるようにする
-    (defalias 'exit 'save-buffers-kill-emacs)
-    ;; 起動時に最小化する
-    (add-hook 'after-init-hook 'iconify-emacs-when-server-is-done)
-
-    ;; 終了時に yes/no の問い合わせ
-    (setq confirm-kill-emacs 'yes-or-no-p)
-
-    ;; Solarized theme適用
+  ;;  Solarized theme
+  ;;    GUIのthemeはSolarized
     (load-theme 'solarized-dark t)
-    )
+    (let ((line (face-attribute 'mode-line :underline)))
+      (set-face-attribute 'mode-line          nil :overline   line)
+      (set-face-attribute 'mode-line-inactive nil :overline   line)
+      (set-face-attribute 'mode-line-inactive nil :underline  line)
+      (set-face-attribute 'mode-line          nil :box        nil)
+      (set-face-attribute 'mode-line-inactive nil :box        nil)
+      (set-face-attribute 'mode-line-inactive nil :background "#002b36"))
 )
 
-;; Solarized theme
+;;; emacsclient
 (setq myGraphicModeHash (make-hash-table :test 'equal :size 2))
 (puthash "gui" t myGraphicModeHash)
 (puthash "term" t myGraphicModeHash)
@@ -85,7 +64,8 @@
       (select-frame frame)
       (when (or gui ter) 
 	(progn
-	  (load-theme 'solarized t))
+	  ;; emacsclientのtheme
+	  (load-theme 'kaolin-mono-dark t))
 	  (if (display-graphic-p)
 	      (puthash "gui" nil myGraphicModeHash)
 	    (puthash "term" nil myGraphicModeHash))))
@@ -93,46 +73,33 @@
 	(remove-hook 'after-make-frame-functions 'emacsclient-setup-theme-function))))
 (if (daemonp)
     (add-hook 'after-make-frame-functions 'emacsclient-setup-theme-function)
-  (progn 
-    (load-theme 'solarized t)
-    ))
+;;  (progn
+;;    (load-theme 'kaolin-mono-dark t))
+)
 
+;;; GUI/emacsclient共通
 ;; 起動時の Welcome 画面無し
 (setq inhibit-splash-screen t)
-
 ;; scratch buffer のメッセージ非表示
 (setq initial-scratch-message "")
-
 ;; 一時マークモードの自動有効化
 (setq-default transient-mark-mode t)
-
 ;; C-x C-u が何もしないように変更する (undo の typo 時誤動作防止)
 (global-unset-key "\C-x\C-u")
-
 ;; 括弧の対応をハイライト.
 (show-paren-mode 1) 
-
 ;; バッファ末尾に余計な改行コードを防ぐための設定
 (setq next-line-add-newlines nil) 
-
-;; C-x l で goto-line を実行
-;;(define-key ctl-x-map "l" 'goto-line) 
-
 ;; メニューバーを消す
 (menu-bar-mode -1)
-
 ;; ツールバー非表示
 (tool-bar-mode 0)
-
 ;; scroll bar 非表示
 (scroll-bar-mode -1)
-
 ;; C-h でカーソルの左にある文字を消す
 (define-key global-map "\C-h" 'delete-backward-char)
-
 ;; C-h に割り当てられている関数 help-command を C-x C-h に割り当てる
 (define-key global-map "\C-x\C-h" 'help-command)
-
 ;; The local variables list in .emacs と言われるのを抑止
 (add-to-list 'ignored-local-variables 'syntax) 
 
@@ -204,26 +171,22 @@ Preview           C-c C-c p  _v_: Preview
 
   ("v" markdown-preview :exit t)))
 
-;;; smart mode line
-(setq sml/theme 'respectful)
-(setq sml/no-confirm-load-theme t)
-(setq sml/shorten-directory -1)
-(setq sml/hidden-modes '(" AC" " ElDoc" " company" " RBlock" " yas" " counsel" " ivy" " WK" " Ρ" " super-save" " tree-sitter"))
-(sml/setup)
-(column-number-mode t)
-(line-number-mode t)
-
-;;; total-line
-(require 'total-lines)
-(global-total-lines-mode t)
-(defun my-set-line-numbers ()
-  (setq-default mode-line-front-space
-		(append mode-line-front-space
-			'((:eval (format " (%d)" (- total-lines 1)))))))
-(add-hook 'after-init-hook 'my-set-line-numbers)
+;;; mode line
+(require 'moody)
+(setq x-underline-at-descent-line t)
+(moody-replace-mode-line-buffer-identification)
+(moody-replace-vc-mode)
+;; minions
+(require 'minions)
+(minions-mode)
+(setq minions-mode-line-lighter "[+]")
+(setq minions-prominent-modes '(overwrite-mode))
+;; display column
+(column-number-mode)
 
 ;;; magit
 (global-set-key (kbd "C-x g") 'magit-status)
+(setq magit-completing-read-function 'magit-ido-completing-read)
 
 ;;; company
 (require 'company)
@@ -243,27 +206,32 @@ Preview           C-c C-c p  _v_: Preview
 (define-key company-active-map (kbd "C-s") 'company-filter-candidates) ;; C-s で絞り込む
 (define-key company-active-map [tab] 'company-complete-selection) ;; TAB で候補を設定
 (define-key emacs-lisp-mode-map (kbd "C-M-i") 'company-complete) ;; 各種メジャーモードでも C-M-i で company-mode の補完を使う
-;; color
-;;(set-face-attribute 'company-tooltip nil
-;;		    :foreground "black" :background "lightgrey")
-;;(set-face-attribute 'company-tooltip-common nil
-;;		    :foreground "black" :background "lightgrey")
-;;(set-face-attribute 'company-tooltip-common-selection nil
-;;		    :foreground "white" :background "steelblue")
-;;(set-face-attribute 'company-tooltip-selection nil
-;;		    :foreground "black" :background "steelblue")
-;;(set-face-attribute 'company-preview-common nil
-;;		    :background nil :foreground "lightgrey" :underline t)
-;;(set-face-attribute 'company-scrollbar-fg nil
-;;		    :background "orange")
-;;(set-face-attribute 'company-scrollbar-bg nil
-;;		    :background "gray40")
 
-;;; company-quickhelp
+;; company-quickhelp
 (setq company-quickhelp-color-foreground "white")
 (setq company-quickhelp-color-background "dark slate gray")
 (setq company-quickhelp-max-lines 5)
 (company-quickhelp-mode)
+
+;; color config
+;;   AndroidStudioの色をモチーフ
+;;     選択: #2E64C8
+;;     非選択: #3B3E40
+;;     文字色: #AFB1B3
+(set-face-attribute 'company-tooltip nil
+                    :foreground "#AFB1B3" :background "#3B3E40")
+(set-face-attribute 'company-tooltip-common nil
+                    :foreground "#AFB1B3" :background "#3B3E40")
+(set-face-attribute 'company-tooltip-common-selection nil
+                    :foreground "#AFB1B3" :background "#2E64C8")
+(set-face-attribute 'company-tooltip-selection nil
+                    :foreground "#AFB1B3" :background "#2E64C8")
+(set-face-attribute 'company-preview-common nil
+                    :background nil :foreground "#3B3E40" :underline t)
+(set-face-attribute 'company-scrollbar-fg nil
+                    :background "orange")
+(set-face-attribute 'company-scrollbar-bg nil
+                    :background "gray40")
 
 ;;; company end ;;;
 
@@ -339,24 +307,6 @@ Preview           C-c C-c p  _v_: Preview
 
 ;;; espy
 (setq espy-password-file "~/.etc/passwd/passwd.org.gpg")
-
-;;; Bridge projectile and project together so packages that depend on project
-;;; like eglot work
-(use-package projectile
-  :diminish
-  :ensure t)
-;;  :custom
-;;  (projectile-switch-project-action 'projectile-dired)
-;;  :config
-;;  (projectile-mode +1)
-;;  (when (executable-find "ghq")
-;;    (setq projectile-known-projects
-;;          (mapcar
-;;           (lambda (x) (abbreviate-file-name x))
-;;           (split-string (shell-command-to-string "ghq list --full-path")))))
-;;  :bind-keymap
-;;  ("C-c p" . projectile-command-map))
-
 
 ;;; eglot
 (require 'eglot)
@@ -443,14 +393,6 @@ Preview           C-c C-c p  _v_: Preview
 ;;; amx
 (use-package amx)
 
-;;; pangu-spacing.el
-(require 'pangu-spacing)
-(setq pangu-spacing-real-insert-separtor t)
-;; 特定のモードで使う
-;;(add-hook 'text-mode-hook 'pangu-spacing-mode)
-;; すべてのメジャーモードで使う
-;;(global-pangu-spacing-mode 1)
-
 ;;; which-key.el
 (require 'which-key)
 
@@ -477,12 +419,175 @@ Preview           C-c C-c p  _v_: Preview
 ;;; backup file
 (setq make-backup-files nil)
 
-
 ;;; default-text-scale : Easily adjust the font size
 (default-text-scale-mode 1)
 
+;;; treemcs
+(use-package treemacs
+  :ensure t
+  :defer t
+  :init
+  (with-eval-after-load 'winum
+    (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
+  :config
+  (progn
+    (setq treemacs-collapse-dirs                   (if treemacs-python-executable 3 0)
+          treemacs-deferred-git-apply-delay        0.5
+          treemacs-directory-name-transformer      #'identity
+          treemacs-display-in-side-window          t
+          treemacs-eldoc-display                   'simple
+          treemacs-file-event-delay                5000
+          treemacs-file-extension-regex            treemacs-last-period-regex-value
+          treemacs-file-follow-delay               0.2
+          treemacs-file-name-transformer           #'identity
+          treemacs-follow-after-init               t
+          treemacs-expand-after-init               t
+          treemacs-find-workspace-method           'find-for-file-or-pick-first
+          treemacs-git-command-pipe                ""
+          treemacs-goto-tag-strategy               'refetch-index
+          treemacs-header-scroll-indicators        '(nil . "^^^^^^")
+          treemacs-hide-dot-git-directory          t
+          treemacs-indentation                     2
+          treemacs-indentation-string              " "
+          treemacs-is-never-other-window           nil
+          treemacs-max-git-entries                 5000
+          treemacs-missing-project-action          'ask
+          treemacs-move-forward-on-expand          nil
+          treemacs-no-png-images                   nil
+          treemacs-no-delete-other-windows         t
+          treemacs-project-follow-cleanup          nil
+          treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+          treemacs-position                        'left
+          treemacs-read-string-input               'from-child-frame
+          treemacs-recenter-distance               0.1
+          treemacs-recenter-after-file-follow      nil
+          treemacs-recenter-after-tag-follow       nil
+          treemacs-recenter-after-project-jump     'always
+          treemacs-recenter-after-project-expand   'on-distance
+          treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
+          treemacs-show-cursor                     nil
+          treemacs-show-hidden-files               t
+          treemacs-silent-filewatch                nil
+          treemacs-silent-refresh                  nil
+          treemacs-sorting                         'alphabetic-asc
+          treemacs-select-when-already-in-treemacs 'move-back
+          treemacs-space-between-root-nodes        t
+          treemacs-tag-follow-cleanup              t
+          treemacs-tag-follow-delay                1.5
+          treemacs-text-scale                      nil
+          treemacs-user-mode-line-format           nil
+          treemacs-user-header-line-format         nil
+          treemacs-wide-toggle-width               70
+          treemacs-width                           35
+          treemacs-width-increment                 1
+          treemacs-width-is-initially-locked       t
+          treemacs-workspace-switch-cleanup        nil)
 
-;;;;; end of init.el
+    ;; The default width and height of the icons is 22 pixels. If you are
+    ;; using a Hi-DPI display, uncomment this to double the icon size.
+    ;;(treemacs-resize-icons 44)
+
+    (treemacs-follow-mode t)
+    (treemacs-filewatch-mode t)
+    (treemacs-fringe-indicator-mode 'always)
+    (when treemacs-python-executable
+      (treemacs-git-commit-diff-mode t))
+
+    (pcase (cons (not (null (executable-find "git")))
+                 (not (null treemacs-python-executable)))
+      (`(t . t)
+       (treemacs-git-mode 'deferred))
+      (`(t . _)
+       (treemacs-git-mode 'simple)))
+
+    (treemacs-hide-gitignored-files-mode nil))
+  :bind
+  (:map global-map
+        ("M-0"       . treemacs-select-window)
+        ("C-x t 1"   . treemacs-delete-other-windows)
+        ("C-x t t"   . treemacs)
+        ("C-x t d"   . treemacs-select-directory)
+        ("C-x t B"   . treemacs-bookmark)
+        ("C-x t C-t" . treemacs-find-file)
+        ("C-x t M-t" . treemacs-find-tag)))
+
+;;(use-package treemacs-evil
+;;  :after (treemacs evil)
+;;  :ensure t)
+
+(use-package treemacs-projectile
+  :after (treemacs projectile)
+  :ensure t)
+
+(use-package treemacs-icons-dired
+  :hook (dired-mode . treemacs-icons-dired-enable-once)
+  :ensure t)
+
+(use-package treemacs-magit
+  :after (treemacs magit)
+  :ensure t)
+
+;;(use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
+;;  :after (treemacs persp-mode) ;;or perspective vs. persp-mode
+;;  :ensure t
+;;  :config (treemacs-set-scope-type 'Perspectives))
+
+;;(use-package treemacs-tab-bar ;;treemacs-tab-bar if you use tab-bar-mode
+;;  :after (treemacs)
+;;  :ensure t
+;;  :config (treemacs-set-scope-type 'Tabs))
+
+;;; treemacs end ;;;
+
+;;; winum
+(require 'winum)
+(winum-mode)
+
+;;; projectile
+(use-package projectile
+  :ensure t
+  :config
+  (setq projectile-mode-line-prefix " Prj")
+  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+  (projectile-mode +1))
+
+;;; flycheck + textlint
+(use-package flycheck
+  :ensure t
+  :init
+  ;;(global-flycheck-mode t)
+  :config
+  (flycheck-define-checker textlint
+			   "A linter for prose."
+			   :command ("textlint" "--format" "unix"
+				     source-inplace)
+			   :error-patterns
+			   ((warning line-start (file-name) ":" line ":" column ": "
+				     (id (one-or-more (not (any " "))))
+				     (message (one-or-more not-newline)
+					      (zero-or-more "\n" (any " ") (one-or-more not-newline)))
+				     line-end))
+			   :modes (text-mode markdown-mode gfm-mode))
+  (add-to-list 'flycheck-checkers 'textlint)
+
+  (with-eval-after-load 'markdown-mode
+    (add-hook 'gfm-mode-hook
+              (lambda ()
+		(flycheck-mode)
+		(add-node-modules-path)))
+    (add-hook 'markdown-mode-hook
+              (lambda ()
+		(flycheck-mode)
+		(add-node-modules-path))))
+  )
+
+(use-package flycheck-inline
+  :init
+  (with-eval-after-load 'flycheck
+    (add-hook 'flycheck-mode-hook #'flycheck-inline-mode)))
+
+
+;;;;; end of init.el ;;;;;
 
 
 (custom-set-variables
@@ -490,18 +595,63 @@ Preview           C-c C-c p  _v_: Preview
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(ansi-color-names-vector
+   ["#002b36" "#dc322f" "#859900" "#b58900" "#268bd2" "#d33682" "#2aa198" "#839496"])
  '(custom-safe-themes
-   '("d677ef584c6dfc0697901a44b885cc18e206f05114c8a3b7fde674fce6180879" "8db4b03b9ae654d4a57804286eb3e332725c84d7cdab38463cb6b97d5762ad26" "8aebf25556399b58091e533e455dd50a6a9cba958cc4ebb0aab175863c25b9a4" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" default))
+   '("c95813797eb70f520f9245b349ff087600e2bd211a681c7a5602d039c91a6428" "dea4b7d43d646aa06a4f705a58f874ec706f896c25993fcf73de406e27dc65ba" "d677ef584c6dfc0697901a44b885cc18e206f05114c8a3b7fde674fce6180879" "8db4b03b9ae654d4a57804286eb3e332725c84d7cdab38463cb6b97d5762ad26" "8aebf25556399b58091e533e455dd50a6a9cba958cc4ebb0aab175863c25b9a4" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" default))
+ '(fci-rule-color "#073642")
  '(flymake-error-bitmap nil)
  '(flymake-note-bitmap nil)
  '(flymake-warning-bitmap nil)
  '(frame-background-mode 'dark)
+ '(highlight-changes-colors '("#d33682" "#6c71c4"))
+ '(highlight-tail-colors
+   '(("#073642" . 0)
+     ("#546E00" . 20)
+     ("#00736F" . 30)
+     ("#00629D" . 50)
+     ("#7B6000" . 60)
+     ("#8B2C02" . 70)
+     ("#93115C" . 85)
+     ("#073642" . 100)))
  '(package-selected-packages
-   '(default-text-scale super-save tree-sitter tree-sitter-langs viewer python-mode hide-mode-line which-key deadgrep pangu-spacing mozc-im amx flycheck-pycheckers flymake-ruby flycheck-posframe package-lint-flymake package-lint flymake-diagnostic-at-point posframe counsel ivy company-quickhelp company-quickhelp-terminal exec-path-from-shell smart-jump projectile eglot espy mozc use-package markdown-mode bind-key hydra markdown-preview-mode slime helm-c-yasnippet robe w3m yasnippet flycheck ruby-block helm-ag recentf-ext company magit helm zenburn-theme total-lines solarized-theme smart-mode-line molokai-theme madhat2r-theme gruvbox-theme dakrone-theme calmer-forest-theme))
+   '(flycheck-inline add-node-modules-path adoc-mode srcery-theme kaolin-themes minions moody yaml-mode winum projectile-ripgrep treemacs default-text-scale super-save tree-sitter tree-sitter-langs viewer python-mode hide-mode-line which-key deadgrep pangu-spacing mozc-im amx flycheck-pycheckers flymake-ruby flycheck-posframe package-lint-flymake package-lint flymake-diagnostic-at-point posframe counsel ivy company-quickhelp company-quickhelp-terminal exec-path-from-shell smart-jump projectile eglot espy mozc use-package markdown-mode bind-key hydra markdown-preview-mode slime helm-c-yasnippet robe w3m yasnippet flycheck ruby-block helm-ag recentf-ext company magit helm zenburn-theme total-lines solarized-theme smart-mode-line molokai-theme madhat2r-theme gruvbox-theme dakrone-theme calmer-forest-theme))
+ '(vc-annotate-background nil)
+ '(vc-annotate-color-map
+   '((20 . "#dc322f")
+     (40 . "#CF4F1F")
+     (60 . "#C26C0F")
+     (80 . "#b58900")
+     (100 . "#AB8C00")
+     (120 . "#A18F00")
+     (140 . "#989200")
+     (160 . "#8E9500")
+     (180 . "#859900")
+     (200 . "#729A1E")
+     (220 . "#609C3C")
+     (240 . "#4E9D5B")
+     (260 . "#3C9F79")
+     (280 . "#2aa198")
+     (300 . "#299BA6")
+     (320 . "#2896B5")
+     (340 . "#2790C3")
+     (360 . "#268bd2")))
+ '(vc-annotate-very-old-color nil)
+ '(weechat-color-list
+   '(unspecified "#002b36" "#073642" "#990A1B" "#dc322f" "#546E00" "#859900" "#7B6000" "#b58900" "#00629D" "#268bd2" "#93115C" "#d33682" "#00736F" "#2aa198" "#839496" "#657b83"))
  '(which-key-mode t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(markup-code-face ((t nil)))
+ '(markup-meta-face ((t (:inherit font-lock-function-name-face))))
+ '(markup-meta-hide-face ((t (:inherit markup-meta-face))))
+ '(markup-secondary-text-face ((t (:foreground "firebrick"))))
+ '(markup-title-0-face ((t (:inherit markup-gen-face))))
+ '(markup-title-1-face ((t (:inherit markup-gen-face))))
+ '(markup-title-2-face ((t (:inherit markup-gen-face))))
+ '(markup-title-3-face ((t (:inherit markup-gen-face))))
+ '(markup-title-4-face ((t (:inherit markup-gen-face))))
+ '(markup-title-5-face ((t (:inherit markup-gen-face)))))
