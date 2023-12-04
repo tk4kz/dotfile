@@ -39,7 +39,8 @@
   (ad-activate 'mozc-handle-event)
   
   ;; font
-  (add-to-list 'default-frame-alist '(font . "Cica-14"))
+  ;;(add-to-list 'default-frame-alist '(font . "Cica-14"))
+  (add-to-list 'default-frame-alist '(font . "HackGen-14"))
 
   ;; GUI themeはSolarized
   (load-theme 'solarized-dark t)
@@ -196,8 +197,8 @@ Preview           C-c C-c p  _v_: Preview
 ;;  )
 
 ;;;;; east-asian-ambiguous
-;;(require 'eaw)
-;;(eaw-fullwidth)
+(require 'eaw)
+(eaw-fullwidth)
 
 ;;;;; keyboard macro
 ;;;; commented pry in Ruby script
@@ -243,15 +244,14 @@ Preview           C-c C-c p  _v_: Preview
     :hook (after-init . which-key-mode))
 
 ;;;;; Tree-sitter
-;;(use-package treesit-auto
-;;  :ensure t
-;;  :config
-;;  (setq treesit-auto-install t)
-;;  (global-treesit-auto-mode))
-;;
+(use-package treesit-auto
+  :config
+  (setq treesit-auto-install t)
+  (global-treesit-auto-mode))
 ;;(use-package treesit
 ;;  :config
 ;;  (setq treesit-font-lock-level 4))
+
 
 ;;;;; backup file
 (setq make-backup-files nil)
